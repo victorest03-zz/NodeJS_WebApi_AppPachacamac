@@ -1,0 +1,13 @@
+{
+  "name": "webserviceis-nodejs",
+  "version": "0.0.1",
+  "dependencies": {
+    "body-parser": "^1.14.2",
+    "express": "^4.13.4",
+    "jade": "^1.11.0",
+    "method-override": "^2.3.5",
+    "mongoose": "~4.4.0",
+    "connect-multiparty" :"*",
+    "gridfs-stream": "*"
+  }
+}

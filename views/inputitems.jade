@@ -1,0 +1,50 @@
+doctype html
+html(lang='en', ng-app='app')
+    head
+        meta(charset='UTF-8')
+        // Import Google Icon Font
+        link(href='http://fonts.googleapis.com/icon?family=Material+Icons', rel='stylesheet')
+        // Import materialize.css
+        link(type='text/css', rel='stylesheet', href='/css/materialize.min.css', media='screen,projection')
+        title Registro de Items de AppPachacamac
+    body(ng-controller='BodyController')
+        // Import jQuery before materialize.js
+        script(type='text/javascript', src='https://code.jquery.com/jquery-2.1.1.min.js')
+        script(src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular.js', type='application/javascript')
+        script(src='/js/app.js', type='application/javascript')
+        script(type='text/javascript', src='/js/materialize.min.js')
+        .container
+            h2 Registro de Items de AppPachacamac
+            .row
+                form.col.s12(action='/api/items', method='post', enctype='multipart/form-data')
+                    .input-field.col.s12
+                        input#titulo.validate(type='text', name='title')
+                        label(for='titulo') Titulo
+                    .input-field.col.s12
+                        textarea#description.validate.materialize-textarea(name='description')
+                        label(for='description') Descripcion
+                    .input-field.col.s12
+                        input#attention.validate(type='text', name='attention')
+                        label(for='attention') Horario de Atencion
+                    .input-field.col.s12
+                        input#location.validate(type='text', name='location')
+                        label(for='location') Ubicacion
+                    .input-field.col.s12
+                        input#coordinates.validate(type='text', name='coordinates')
+                        label(for='coordinates') Coordenadas
+                    .input-field.col.s12
+                        select(material-select='', watch='', name='article')
+                            option(ng-repeat='cat in categorias', value='{{cat._id}}') {{cat.title}}
+                    .file-field.input-field.col.s12
+                        .btn
+                            span Foto
+                            input(type='file', name='pic')
+                        .file-path-wrapper
+                            input.file-path.validate(type='text')
+                    button.btn.waves-effect.waves-light.col.s12(type='submit', name='action')
+                        | Enviar
+                        i.material-icons.right send
+        script.
+            $(document).ready(function() {
+                $('select').material_select();
+            });

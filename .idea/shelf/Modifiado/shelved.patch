@@ -1,0 +1,215 @@
+Index: controllers/img.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- controllers/img.js	(revision )
++++ controllers/img.js	(revision )
+@@ -0,0 +1,9 @@
++var mongoose = require('mongoose'),
++    gridfs = require('gridfs-stream'),
++    fs = require('fs');
++
++exports.getimg = function(req, res){
++    var grid = gridfs(mongoose.connection, mongoose.mongo);
++    res.writeHead(200, { "Content-Type" : "image/png"});
++    grid.createReadStream({ _id: req.params.id}).pipe(res);
++}
+Index: controllers/categoria.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- controllers/categoria.js	(date 1454958956000)
++++ controllers/categoria.js	(revision )
+@@ -11,16 +11,24 @@
+ 
+ //POST - Agregar
+ exports.agregarCategoria = function(req, res) {
+-    console.log('POST');
+-    console.log(req.body);
++    var itemId =  mongoose.Types.ObjectId();
+ 
+     var categoria = new Categorias({
+         title: req.body.title,
+         description:req.body.description,
+-        image:req.body.image
++        img:itemId
+     });
+-    
++
+-    console.log(categoria);
++    var gfs = gridfs(mongoose.connection.db);
++    var writestream = gfs.createWriteStream({
++        _id:itemId,
++        filename:req.files.pic.name
++    });
++    fs.createReadStream(req.files.pic.path).
++    pipe(writestream).
++    on('finish', function() {
++        console.log('done!');
++    });
+ 
+     categoria.save(function(err, categoria){
+         if(err) return res.status(500).send( err.message);
+\ No newline at end of file
+Index: app.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app.js	(date 1454958956000)
++++ app.js	(revision )
+@@ -3,9 +3,7 @@
+     app             = express(),
+     bodyParser      = require("body-parser"),
+     mongoose        = require('mongoose'),
+-    mongodb = require('mongodb'),
+     gridfs = require('gridfs-stream'),
+-    fs = require('fs'),
+     multipart       = require('connect-multiparty');
+ 
+ // Connection to DB
+@@ -14,6 +12,7 @@
+   if(err) throw err;
+   console.log('Connected to Database');
+ });
++gridfs.mongo = mongoose.mongo;
+ 
+ // Middlewares
+ app.use(bodyParser.urlencoded({ extended: true }));
+@@ -27,6 +26,8 @@
+ var Categoriasmodels     = require('./models/categoria')(app, mongoose);
+ var CategoriaCtrl = require('./controllers/categoria');
+ 
++var ImgCtrl = require('./controllers/img.js');
++
+ //var FileCtrl = requiere('./controllers/file');
+ 
+ // Ejemplo de Route
+@@ -73,18 +74,11 @@
+ app.use('/api', categoria);
+ 
+ //API File
+-var file = express.Router();
+-file.route('/arch').post(ItemCtrl.agregarimg);
++var img = express.Router();
++img.route('/img/:id')
++    .get(ImgCtrl.getimg);
+ 
+-app.use('/api',file);
+-
+-gridfs.exist({
+-    filename: 'testfile.txt'
+-}, function (err, found) {
+-    if (err) return handleError(err);
+-    found ? logger.debug('File exists') : logger.debug('File does not exist');
+-});
+-
++app.use('/api',img);
+ 
+ // Start server
+ app.listen(8008, function() {
+Index: controllers/item.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- controllers/item.js	(date 1454958956000)
++++ controllers/item.js	(revision )
+@@ -1,5 +1,4 @@
+ var mongoose = require('mongoose'),
+-    mongodb = require('mongodb'),
+     gridfs = require('gridfs-stream'),
+     fs = require('fs');
+ 
+@@ -24,19 +23,27 @@
+ 
+ //POST - Agregar
+ exports.agregarItem = function(req, res) {
+-    console.log('POST');
+-    console.log(req.body);
+-
++    var itemId =  mongoose.Types.ObjectId();
+     var item = new Items({
+         title: req.body.title,
+         description:req.body.description,
+         attention:req.body.attention,
+         location:req.body.location,
+         coordinates:req.body.coordinates,
+-        article:req.body.article
++        article:req.body.article,
++        img:itemId
+     });
+-    
++
+-    console.log(item);
++    var gfs = gridfs(mongoose.connection.db);
++    var writestream = gfs.createWriteStream({
++        _id:itemId,
++        filename:req.files.pic.name
++    });
++    fs.createReadStream(req.files.pic.path).
++    pipe(writestream).
++    on('finish', function() {
++        console.log('done!');
++    });
+ 
+     item.save(function(err, item){
+         if(err) return res.status(500).send( err.message);
+@@ -75,20 +82,5 @@
+     });
+ };
+ 
+-
+-exports.agregarimg = function(req, res){
+-    var uri = 'mongodb://localhost:27017/apppachacamac';
+-
+-    mongodb.MongoClient.connect(uri, function(error, db) {
+-
+-        var bucket = new mongodb.GridFSBucket(db);
+-
+-        fs.createReadStream(req.files.pic.path).
+-        pipe(bucket.openUploadStream(req.files.pic.name)).
+-        on('finish', function() {
+-            console.log('done!');
+-        });
+-    });
+-};
+ 
+ 
+Index: models/categoria.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- models/categoria.js	(date 1454958956000)
++++ models/categoria.js	(revision )
+@@ -3,7 +3,7 @@
+ 	var categoriaSchema = new mongoose.Schema({
+         title: {type: String},
+         description:{type: String},
+-        image:{type: String}
++        img:{type: String}
+     });
+ 
+ 	mongoose.model('Categorias', categoriaSchema);
+\ No newline at end of file
+Index: models/item.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- models/item.js	(date 1454958956000)
++++ models/item.js	(revision )
+@@ -9,7 +9,8 @@
+         article:{
+             type: String,
+             enum: ['Atracciones Principales','Actividades','Restaurantes','Hoteles']
+-        }
++        },
++        img:{type: String}
+     });
+ 
+ 	mongoose.model('Items', itemSchema);
+\ No newline at end of file

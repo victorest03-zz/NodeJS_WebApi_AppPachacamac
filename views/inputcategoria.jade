@@ -1,0 +1,33 @@
+doctype html
+html(lang='en')
+    head
+        meta(charset='UTF-8')
+        // Import Google Icon Font
+        link(href='http://fonts.googleapis.com/icon?family=Material+Icons', rel='stylesheet')
+        // Import materialize.css
+        link(type='text/css', rel='stylesheet', href='css/materialize.min.css', media='screen,projection')
+        title Registro de Categoria de AppPachacamac
+        script(src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular.js', type='application/javascript')
+    body
+        // Import jQuery before materialize.js
+        script(type='text/javascript', src='https://code.jquery.com/jquery-2.1.1.min.js')
+        script(type='text/javascript', src='/js/materialize.min.js')
+        .container
+            h2 Registro de Categorias de AppPachacamac
+            .row
+                form.col.s12(action='/api/categorias', method='post', enctype='multipart/form-data')
+                    .input-field.col.s12
+                        input#titulo.validate(type='text', name='title')
+                        label(for='titulo') Titulo
+                    .input-field.col.s12
+                        textarea#description.validate.materialize-textarea(name='description')
+                        label(for='description') Descripcion
+                    .file-field.input-field.col.s12
+                        .btn
+                            span Foto
+                            input(type='file', name='pic')
+                        .file-path-wrapper
+                            input.file-path.validate(type='text', name='pic')
+                    button.btn.waves-effect.waves-light.col.s12(type='submit', name='action')
+                        | Enviar
+                        i.material-icons.right send
